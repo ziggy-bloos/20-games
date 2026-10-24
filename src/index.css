@@ -1,0 +1,13 @@
+#games div {
+    float:left;
+    margin-right:40px;
+}
+
+#games div a {
+    display:block;
+}
+
+#games img {
+    width:200px;
+    height:200px;
+}

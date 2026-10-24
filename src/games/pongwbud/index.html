@@ -1,0 +1,329 @@
+<!DOCTYPE html><html><head><title>Pong w/ ur Bud</title><meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui=1"><meta charset="UTF-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content=""><link rel="manifest" href="manifest.json"><link rel="icon" type="image/svg+xml" href="icon.svg"><style>html,body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  overflow:hidden;
+  font-family: Verdana;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#canvaswrapper {
+  text-align: center ;
+}
+</style><style>@font-face { font-family: "BitCell" ; src: url("fonts/BitCell.ttf") format("truetype"); }</style><script>window.fonts = ["BitCell"]</script></head><body class="noselect custom-cursor" oncontextmenu="return false;"><div id="canvaswrapper"></div><script type="text/javascript">var resources = {"images":[{"file":"icon.png","version":97,"size":229,"properties":{"frames":1,"fps":5}}],"assets":[],"maps":{},"sounds":[],"music":[]};
+var graphics = "M1";
+
+</script><script type="text/javascript">var orientation = 'landscape' ;
+var aspect = '4x3' ;
+var ms_libs = [] ;
+window.skip_service_worker = true;
+window.exported_project = true;
+window.ms_use_server = false ;
+</script><script src="../../js/compiler.js"></script><script src="../../js/parser.js"></script><script src="../../js/processor.js"></script><script src="../../js/program.js"></script><script src="../../js/routine.js"></script><script src="../../js/runner.js"></script><script src="../../js/token.js"></script><script src="../../js/tokenizer.js"></script><script src="../../js/transpiler.js"></script><script src="../../js/microengine.js"></script></body><script type="text/javascript">//
+//
+// The game is started with the code below.
+// Once you have received the "started" signal (see below),
+// you can do the following:
+// 1) Inject functions or objects into the global context of the microStudio engine, example:
+//
+//   window.player.setGlobal("special_callback",function(x) { console.info(x) }) ;
+//   // Your microScript code can now call the "special_callback" function
+//
+// 2) Call microScript global functions from your JavaScript code, example:
+//
+//   window.player.call("call_me_from_javascript",[10,1000]) ;
+//   // arguments to the function call are provided as an array
+//
+// 3) Run a microScript code snippet from your JavaScript code, example:
+//
+//   window.player.exec("player.position_x = 50",function(result) { console.log(result) ; }) ;
+//
+
+window.addEventListener("load",function() {
+  window.player = new Player(function(event) {
+    if (event.name == "started") {
+      // signal that the game is started
+    }
+    else if (event.name == "log") {
+      // console.info(event.data) ;
+    }
+  }) ;
+  document.body.focus() ;
+}) ;
+
+</script><script id="code" type="text/x-microscript">
+
+
+// file: ball.ms
+function()
+ball = object
+  r = random.nextInt(360)
+  x = 0 y = 0
+  w = 15 h = 15
+  spd = 3
+end
+
+resetBall = function()
+  ball.r = random.nextInt(360)
+  ball.x = 0 ball.y = 0
+end
+
+local moveBy = function(v)
+  ball.x += sind(ball.r) * ball.spd + v
+  ball.y += cosd(ball.r) * ball.spd + v
+end
+
+local v_bounce = function()
+  ball.r = 180 - ball.r + random.nextInt(21) - 10
+end
+
+local h_bounce = function()
+  ball.r = -ball.r + random.nextInt(21) - 10
+end
+
+ball.move = function()
+  moveBy()
+  
+  local screenLower = -100 + ball.h / 2
+  local screenUpper = 100 - ball.h / 2
+  
+  if clamp(ball.y, screenLower, screenUpper) == screenLower or
+     clamp(ball.y, screenLower, screenUpper) == screenUpper then
+    v_bounce()
+  end
+  
+  if checkCollisions(ball, plr1) or checkCollisions(ball, plr2) then
+    h_bounce()
+  end
+end
+
+end()
+
+
+// file: buttons.ms
+function()
+Button = class
+  constructor = function(x, y, w, h, t, ts, c1, c2)
+    this.x = x
+    this.y = y
+    this.w = w
+    this.h = h
+    this.t = t
+    this.ts = ts
+    this.c1 = c1
+    this.c2 = c2
+  end
+end
+
+drawBtn = function(btn)
+  screen.setLineDash([0,0])
+  screen.setLineWidth(2)
+  screen.drawRect(btn.x,btn.y,btn.w,btn.h,btn.c2)
+  screen.fillRect(btn.x,btn.y,btn.w,btn.h,btn.c1)
+  
+  screen.drawText(btn.t,btn.x,btn.y,btn.ts,btn.c2)
+end
+
+start_btns = []
+start_btns.push(new Button(0, -20, 60, 15, "PLAY", 12, "#444", "#AAA"))
+start_btns.push(new Button(0, -40, 60, 15, "KEYBINDS", 12, "#444", "#AAA"))
+  
+game_btns = []
+game_btns.push(new Button(-20, 90, 30, 10, "HOME", 8, "#444", "#AAA"))
+game_btns.push(new Button(20, 90, 30, 10, "RESET", 8, "#444", "#AAA"))
+
+end()
+
+
+// file: main.ms
+function()
+local resetGame = function() 
+  resetBall()
+  plr1.score = 0 plr2.score = 0
+end
+
+init = function()
+  startGame = false
+  showKeybinds = false
+end
+
+update = function()
+  if startGame then
+    ball.move()
+    plr1.move()
+    plr2.move()
+  end
+  
+  if not startGame then
+    if keyboard.press.SPACE then
+      startGame = true
+      resetGame()
+    end
+    if keyboard.press.K then
+      if not showKeybinds then
+        showKeybinds = true
+      else
+        showKeybinds = false
+      end
+    end
+  else
+    if keyboard.press.R then
+      resetGame()
+    end
+    if keyboard.press.ESCAPE then
+      startGame = false
+    end
+  end
+  
+  if mouse.left and mouse.press then
+    if not startGame then
+      if mouseIsIn(start_btns[0]) then
+        startGame = true
+        resetGame()
+      end
+      if mouseIsIn(start_btns[1]) then
+        if not showKeybinds then
+          showKeybinds = true
+        else
+          showKeybinds = false
+        end
+      end
+    else
+      if mouseIsIn(game_btns[0]) then
+        startGame = false
+      end
+      if mouseIsIn(game_btns[1]) then
+        resetGame()
+      end
+    end
+  end
+  
+  if ball.x > 140 then
+    plr1.score += 1
+    resetBall()
+  elsif ball.x < -140 then
+    plr2.score += 1
+    resetBall()
+  end
+end
+
+draw = function()
+  screen.clear("#111")
+  
+  if startGame then
+    screen.setLineDash([15,8])
+    screen.drawLine(0,100,0,-100,"#FFF")
+    
+    screen.drawText("PLAYER 1", -70, 82, 12, "#AAA")
+    screen.drawText(plr1.score, -70, 68, 16,)
+    screen.drawText("PLAYER 2", 70, 82, 12)
+    screen.drawText(plr2.score, 70, 68, 16)
+    
+    screen.fillRect(ball.x,ball.y,ball.w,ball.h,"#FFF")
+    drawPlayer(plr1)
+    drawPlayer(plr2)
+    
+    for btn in game_btns
+      drawBtn(btn)
+    end
+  else
+    for btn in start_btns
+      drawBtn(btn)
+    end
+    
+    screen.drawTextOutline("PONG W/ UR BUD", 0, 50, 30, "#AAA")
+    screen.drawText("PONG W/ UR BUD", 0, 50, 30, "#444")
+    screen.drawText("Prerequisites:", 0, 25, 10, "#AAA")
+    screen.drawText("A keyboard and a bud", 0, 14, 8)
+    
+    if showKeybinds then
+      screen.drawRect(80, -35, 80, 60, "#AAA")
+      screen.fillRect(80, -35, 80, 60, "#444")
+      
+      screen.drawText("- SPACE = PLAY BUTTON", 80, -12, 7, "#AAA")
+      screen.drawText("- ESCAPE = HOME BUTTON", 80, -19, 7)
+      screen.drawText("- R = RESET BUTTON", 80, -26, 7)
+      screen.drawText("- K = KEYBINDS BUTTON", 80, -33, 7)
+      screen.drawText("- W, S = PLAYER 1", 80, -40, 7)
+      screen.drawText("- ARROWS = PLAYER 2", 80, -47, 7)
+      screen.drawText("[ click again to exit ]", 80, -57, 7)
+    end  
+  end
+end
+
+end()
+
+
+// file: physics.ms
+function()
+clamp = function(val, lower, upper)
+  return min(max(val, lower), upper)
+end
+
+checkCollisions = function(obj1, obj2)
+  return obj1.x + obj1.w / 2 > obj2.x - obj2.w / 2 and
+         obj1.x - obj1.w / 2 < obj2.x + obj2.w / 2 and
+         obj1.y + obj1.h / 2 > obj2.y - obj2.h / 2 and
+         obj1.y - obj1.h / 2 < obj2.y + obj2.h / 2
+end
+
+mouseIsIn = function(obj)
+  return mouse.x > obj.x - obj.w / 2 and
+         mouse.x < obj.x + obj.w / 2 and
+         mouse.y > obj.y - obj.h / 2 and
+         mouse.y < obj.y + obj.h / 2
+end
+
+end()
+
+
+// file: players.ms
+function()
+Player = class
+  constructor = function(x, y, w, h, spd)
+    this.x = x
+    this.y = y
+    this.w = w
+    this.h = h
+    this.spd = 3
+    this.score = 0
+  end
+end
+
+plr1 = new Player(-120, 0, 10, 40)
+plr2 = new Player(120, 0, 10, 40)
+
+plr1.move = function()
+  if keyboard.W then
+    plr1.y += plr1.spd
+  elsif keyboard.S then
+    plr1.y -= plr1.spd
+  end
+
+  plr1.y = clamp(plr1.y, -100 + plr1.h / 2, 100 - plr1.h / 2)
+end
+
+plr2.move = function()
+  if keyboard.ARROW_UP then
+    plr2.y += plr2.spd
+  elsif keyboard.ARROW_DOWN then
+    plr2.y -= plr2.spd
+  end
+
+  plr2.y = clamp(plr2.y, -100 + plr2.h / 2, 100 - plr2.h / 2)
+end
+
+drawPlayer = function(plr)
+  screen.fillRect(plr.x, plr.y, plr.w, plr.h, "#FFF")
+end
+
+end()
+
+
+</script></html>
