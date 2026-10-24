@@ -1,3 +1,7 @@
+body {
+    background-color:#e5e5e5;
+}
+
 #games div {
     float:left;
     margin-right:40px;
