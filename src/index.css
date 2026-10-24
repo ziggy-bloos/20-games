@@ -11,3 +11,8 @@
     width:200px;
     height:200px;
 }
+
+footer {
+    padding-top:180px;
+    clear: both;
+}
