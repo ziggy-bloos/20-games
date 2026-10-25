@@ -1,0 +1,19 @@
+html,body {
+  margin:0;
+  padding:0;
+  background-color:#e5e5e5;
+  overflow:hidden;
+  font-family:"Times New Roman", Times, serif;
+  text-align:center ;
+}
+.noselect {
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -khtml-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+}
+#canvaswrapper {
+text-align:center ;
+}

@@ -1,22 +1,28 @@
 body {
-    background-color:#e5e5e5;
-}
-
-#games div {
-    float:left;
-    margin-right:40px;
-}
-
-#games div a {
-    display:block;
-}
-
-#games img {
-    width:200px;
-    height:200px;
+  margin:0px;
+  text-align: center;
+  background-color:#e5e5e5;
 }
 
 footer {
-    padding-top:180px;
-    clear: both;
+  padding-top:50px;
+  clear:both;
+}
+
+#games div {
+  float:left;
+  margin-inline:20px;
+  background-color:#fff;
+  padding:20px;
+}
+
+#games img {
+  width:200px;
+  height:200px;
+}
+
+.note {
+  background-color:#e00;
+  padding:6px;
+  color:#e5e5e5;
 }
